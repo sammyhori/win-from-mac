@@ -18,18 +18,25 @@
 # This script is for creating a bootable Windows USB drive from a Windows ISO
 # file on a MacOS system. This can then be used to install Windows on a PC.
 # It is designed to be run from a macOS terminal.
-# It requires the following tools:
-# - wimlib
-# - diskutil
-# - hdiutil
-# - rsync
-# - stat
-# - awk
-# - brew (for installing wimlib if not already installed)
+
+# Prerequisites
+# - A Windows ISO file (e.g., Windows 10 or Windows 11)
+# - A USB drive with sufficient space
+# - THE USB DIRVE WILL BE ERASED, so ensure to back up any important data
+# - Ensure you have the necessary permissions to run the script and access
+#   the USB drive
+# - The script requires the following tools to be installed on your Mac:
+#	- awk
+#	- diskutil
+#	- hdiutil
+#	- rsync
+#	- stat
+# 	- wimlib (or brew, which will be used to install wimlib)
+# As far as I know, apart from wimlib and brew, these tools are available by
+# default on macOS.
 
 # Usage:
 # ./win-from-mac.sh <path-to-windows-iso> <output-drive>
-# e.g. 
 # Be careful with the output drive, as it will be erased
 
 set -euf -o pipefail
