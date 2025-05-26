@@ -47,14 +47,14 @@ log() {
 	echo "$1"
 }
 
-clean-up() {
+detach_iso_disk() {
 	echo "Cleaning up..."
 	hdiutil detach "${iso_disk}" && echo "Detached ISO disk successfully" || echo "Failed to detach ISO disk"
 }
 
-throw-error() {
+throw_error() {
 	echo "$1" #stderr?
-	clean-up
+	detach_iso_disk
 	exit "$2"
 }
 
@@ -64,28 +64,28 @@ output_partition_name="WINDOWS"
 output_volume="/Volumes/${output_partition_name}"
 
 # ERASE + Format???
-diskutil eraseDisk MS-DOS "${output_partition_name}" MBR "${output_drive}" || throw-error "Failed to erase disk ${output_drive}" 1
+diskutil eraseDisk MS-DOS "${output_partition_name}" MBR "${output_drive}" || throw_error "Failed to erase disk ${output_drive}" 1
 
-hdiutil_output=$(hdiutil attach -readonly "${windows_iso_path}") || throw-error "Failed to attach ISO disk" 2
+hdiutil_output=$(hdiutil attach -readonly "${windows_iso_path}") || throw_error "Failed to attach ISO disk" 2
 iso_disk=$(echo "${hdiutil_output}" | awk '{print $1}')
 iso_volume=$(echo "${hdiutil_output}" | awk '{print $2}')
 
 install_wim_iso_path="${iso_volume}/sources/install.wim"
-install_wim_size=$(stat -f %z "${install_wim_iso_path}") || throw-error "Failed to get size of install.wim" 3
+install_wim_size=$(stat -f %z "${install_wim_iso_path}") || throw_error "Failed to get size of install.wim" 3
 
 if [[ ${install_wim_size} -lt 4294967296 ]]; then # safety?
-	rsync -avh --progress "${iso_volume}" "${output_volume}" || throw-error "Failed to copy ISO contents to output drive" 4
+	rsync -avh --progress "${iso_volume}" "${output_volume}" || throw_error "Failed to copy ISO contents to output drive" 4
 else
-	rsync -avh --progress --exclude=sources/install.wim "${iso_volume}/" "${output_volume}/" || throw-error "Failed to copy ISO contents to output drive, excluding install.wim" 5
+	rsync -avh --progress --exclude=sources/install.wim "${iso_volume}/" "${output_volume}/" || throw_error "Failed to copy ISO contents to output drive, excluding install.wim" 5
 	if ! type wimlib &> /dev/null; then
-		brew install wimlib || throw-error "Failed to install wimlib" 6
+		brew install wimlib || throw_error "Failed to install wimlib" 6
 	fi
-	wimlib-imagex split "${install_wim_iso_path}" "${output_volume}/sources/install.swm" 3800 || throw-error "Failed to split install.wim, ensure \`wimlib\` is not an aliased command" 7
+	wimlib-imagex split "${install_wim_iso_path}" "${output_volume}/sources/install.swm" 3800 || throw_error "Failed to split install.wim, ensure \`wimlib\` is not an aliased command" 7
 fi
 
 sync
 
-clean-up
+detach_iso_disk
 diskutil unmount "${output_volume}" && echo "Unmounted output drive" || echo "Failed to unmount output drive"
 
 set +x
