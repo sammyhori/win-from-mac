@@ -41,8 +41,6 @@
 
 set -euf -o pipefail
 
-set -x
-
 log() {
 	echo "$1"
 }
@@ -87,5 +85,3 @@ sync
 
 detach_iso_disk
 diskutil unmount "${output_volume}" && echo "Unmounted output drive" || echo "Failed to unmount output drive"
-
-set +x
